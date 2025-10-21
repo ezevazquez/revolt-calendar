@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
       
       // Crear un Set de fechas existentes para verificación rápida
       const existingDates = new Set(
-        existingHolidays.map(h => `${h.startDate}_${h.name}`)
+        existingHolidays.map((h: any) => `${h.startDate}_${h.name}`)
       )
       
       const formattedHolidays = scrapedHolidays.map(holiday => {
