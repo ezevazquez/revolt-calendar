@@ -16,6 +16,11 @@ interface APIHoliday {
   nombre: string
 }
 
+interface ExistingHoliday {
+  startDate: string
+  name: string
+}
+
 const client = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
   dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
@@ -110,7 +115,7 @@ export async function POST(request: NextRequest) {
       
       // Crear un Set de fechas existentes para verificación rápida
       const existingDates = new Set(
-        existingHolidays.map((h: any) => `${h.startDate}_${h.name}`)
+        existingHolidays.map((h: ExistingHoliday) => `${h.startDate}_${h.name}`)
       )
       
       const formattedHolidays = scrapedHolidays.map(holiday => {
