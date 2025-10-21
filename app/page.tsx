@@ -3,9 +3,8 @@
 import { useState, useEffect } from "react"
 import Image from "next/image"
 import { CalendarGrid } from "@/components/calendar-grid"
-import { HolidayLegend } from "@/components/holiday-legend"
+import { ColorLegend } from "@/components/color-legend"
 import { getHolidays, type Holiday } from "@/lib/sanity"
-import { Calendar } from "lucide-react"
 
 export default function Home() {
   const [year, setYear] = useState(Math.max(new Date().getFullYear(), 2025))
@@ -26,21 +25,21 @@ export default function Home() {
     <main className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border/50 bg-card/30 backdrop-blur-sm sticky top-0 z-40">
-        <div className="container mx-auto px-4 py-6">
+        <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-lg overflow-hidden shadow-lg">
+              <div className="w-8 h-8 rounded-lg overflow-hidden shadow-lg">
                 <Image 
                   src="/logo.png" 
                   alt="Revolt Logo" 
-                  width={48} 
-                  height={48}
+                  width={32} 
+                  height={32}
                   className="w-full h-full object-contain"
                 />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-foreground">Revolt</h1>
-                <p className="text-sm text-muted-foreground">Holiday Calendar</p>
+                <h1 className="text-2xl font-bold text-foreground">Revolt</h1>
+                <p className="text-xs text-muted-foreground">Holiday Calendar</p>
               </div>
             </div>
           </div>
@@ -63,7 +62,7 @@ export default function Home() {
             </div>
             <div className="lg:col-span-1">
               <div className="sticky top-24">
-                <HolidayLegend holidays={holidays} />
+                <ColorLegend />
               </div>
             </div>
           </div>
@@ -72,8 +71,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="border-t border-border/50 mt-16">
-        <div className="container mx-auto px-4 py-6 text-center text-sm text-muted-foreground">
-          <p>Powered by Sanity CMS • Built with Next.js</p>
+        <div className="container mx-auto px-4 py-6">
         </div>
       </footer>
     </main>

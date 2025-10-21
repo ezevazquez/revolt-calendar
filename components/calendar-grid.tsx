@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useEffect, useRef } from "react"
+import { useMemo, useEffect, useRef } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight } from "lucide-react"
@@ -30,8 +30,23 @@ const MONTHS = [
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
+function getHolidayStyle(holiday: Holiday): string {
+  const baseStyle = "text-white font-semibold shadow-lg hover:shadow-xl cursor-pointer"
+  
+  // Sistema basado en STATUS, no en TYPE
+  switch (holiday.status) {
+    case 'approved':
+      return `bg-red-500 ${baseStyle}` // Rojo sólido - Feriado aprobado
+    case 'working':
+      return `bg-orange-500/60 backdrop-blur-sm ${baseStyle}` // Naranja difuminado - Se trabaja
+    case 'custom':
+      return `bg-purple-500 ${baseStyle}` // Purple sólido - Custom de Revolt
+    default:
+      return `bg-red-500 ${baseStyle}` // Default: rojo sólido
+  }
+}
+
 export function CalendarGrid({ holidays, year, onYearChange }: CalendarGridProps) {
-  const [selectedHoliday, setSelectedHoliday] = useState<Holiday | null>(null)
   const todayRef = useRef<HTMLButtonElement>(null)
   
   // Get today's date
@@ -119,20 +134,45 @@ export function CalendarGrid({ holidays, year, onYearChange }: CalendarGridProps
         <button
           key={day}
           ref={isToday ? todayRef : null}
-          onClick={() => isHoliday && setSelectedHoliday(dayHolidays[0])}
           className={cn(
             "aspect-square flex items-center justify-center rounded-md text-sm transition-all duration-300",
-            "hover:scale-110 hover:z-10 relative",
+            "hover:scale-110 hover:z-10 relative group",
             isHoliday
-              ? "bg-[#DA1104] text-white font-semibold shadow-lg hover:shadow-xl holiday-pulse cursor-pointer"
+              ? getHolidayStyle(dayHolidays[0])
               : isToday
               ? "bg-white text-slate-900 font-bold shadow-lg hover:shadow-xl ring-2 ring-white/50"
               : "text-slate-300 hover:bg-slate-700/50",
           )}
+          title={isHoliday ? `${dayHolidays[0].name} - ${dayHolidays[0].description || 'Official holiday'}` : undefined}
         >
           {day}
-          {isHoliday && <div className="absolute inset-0 rounded-md bg-[#DA1104] opacity-20 blur-sm" />}
-          {isToday && !isHoliday && <div className="absolute inset-0 rounded-md bg-white opacity-10 blur-sm" />}
+          {/* Tooltip */}
+          {isHoliday && (
+            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+              <div className="font-semibold">{dayHolidays[0].name}</div>
+              {dayHolidays[0].description && (
+                <div className="text-slate-300">{dayHolidays[0].description}</div>
+              )}
+              <div className="text-slate-400">
+                {(() => {
+                  // Parse date without timezone conversion (same method used elsewhere)
+                  const dateStr = dayHolidays[0].startDate
+                  const parts = dateStr.split('-')
+                  const date = new Date(
+                    parseInt(parts[0]), 
+                    parseInt(parts[1]) - 1, // Month is 0-indexed
+                    parseInt(parts[2])
+                  )
+                  return date.toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                  })
+                })()}
+              </div>
+              {/* Arrow */}
+              <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-900"></div>
+            </div>
+          )}
         </button>,
       )
     }
@@ -179,57 +219,11 @@ export function CalendarGrid({ holidays, year, onYearChange }: CalendarGridProps
       {/* Calendar Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {Array.from({ length: 12 }, (_, i) => (
-          <div key={i} className="h-[400px]">
+          <div key={i} className="min-h-[400px]">
             {renderMonth(i)}
           </div>
         ))}
       </div>
-
-      {/* Holiday Details Modal */}
-      {selectedHoliday && (
-        <div
-          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-300"
-          onClick={() => setSelectedHoliday(null)}
-        >
-          <Card
-            className="max-w-md w-full p-6 bg-card border-primary/30 shadow-2xl shadow-primary/10 animate-in zoom-in duration-300"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="space-y-4">
-              <div className="flex items-start justify-between">
-                <h3 className="text-2xl font-bold text-foreground">{selectedHoliday.name}</h3>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setSelectedHoliday(null)}
-                  className="hover:bg-secondary"
-                >
-                  ×
-                </Button>
-              </div>
-              <div className="space-y-2 text-muted-foreground">
-                <p>
-                  <span className="font-semibold text-foreground">Start:</span>{" "}
-                  {new Date(selectedHoliday.startDate).toLocaleDateString("en-US", {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </p>
-                <p>
-                  <span className="font-semibold text-foreground">End:</span>{" "}
-                  {new Date(selectedHoliday.endDate).toLocaleDateString("en-US", {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </p>
-                {selectedHoliday.description && <p className="pt-2 text-foreground">{selectedHoliday.description}</p>}
-              </div>
-            </div>
-          </Card>
-        </div>
-      )}
     </div>
   )
 }

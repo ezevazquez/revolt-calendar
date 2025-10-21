@@ -30,17 +30,63 @@ export const holiday = defineType({
       rows: 3,
     }),
     defineField({
-      name: 'color',
-      title: 'Color',
+      name: 'type',
+      title: 'Type',
       type: 'string',
-      description: 'Hex color code (e.g., #FF5733)',
-      validation: (Rule) => Rule.regex(/^#[0-9A-F]{6}$/i, 'Must be a valid hex color'),
+      options: {
+        list: [
+          { title: 'Inamovible', value: 'inamovible' },
+          { title: 'Trasladable', value: 'trasladable' },
+          { title: 'No Laborable', value: 'no_laborable' },
+          { title: 'Custom', value: 'custom' },
+        ],
+      },
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
+      name: 'status',
+      title: 'Status',
+      type: 'string',
+      options: {
+        list: [
+          { title: 'Pending', value: 'pending' },
+          { title: 'Approved', value: 'approved' },
+          { title: 'Rejected', value: 'rejected' },
+          { title: 'Working Day', value: 'working' },
+          { title: 'Custom', value: 'custom' },
+        ],
+      },
+      initialValue: 'pending',
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
+      name: 'isOfficial',
+      title: 'Official Holiday',
+      type: 'boolean',
+      description: 'Is this an official government holiday?',
+      initialValue: false,
     }),
   ],
   preview: {
     select: {
       title: 'name',
       subtitle: 'startDate',
+      status: 'status',
+      type: 'type',
+    },
+    prepare({ title, subtitle, status, type }) {
+      const statusEmoji = {
+        pending: '⏳',
+        approved: '✅',
+        rejected: '❌',
+        working: '💼',
+        custom: '🏢',
+      }
+      
+      return {
+        title: `${statusEmoji[status as keyof typeof statusEmoji]} ${title}`,
+        subtitle: `${subtitle} • ${type}`,
+      }
     },
   },
 })
